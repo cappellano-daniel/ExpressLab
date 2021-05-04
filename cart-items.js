@@ -1,7 +1,7 @@
 const express = require('express');
-const cartItems = express.Router();
+const router = express.Router();
 
-const items = [
+const cartItems = [
     {
         id: 1,
         product: 'Doritos',
@@ -29,44 +29,88 @@ const items = [
 ]
 
 
-cartItems.use(express.json());
+router.use(express.json());
 
 // Grabs all cart items
-cartItems.get('/cart-items/items', (req, res) => {
+router.get('/cart-items/', (req, res) => {
 
-    res.json(items)
+    res.json(cartItems)
 })
 
 
 // 
-cartItems.get('/cart-items/items/:id', (req, res) => {
-
+router.get('/cart-items/:id', (req, res) => {
     console.log(req.params.id)
-    res.json(items.id)
+    const found = cartItems.find(item => item.id === +req.params.id)
+
+    if (!found) {
+        res.status(404).send("The cart item could not be found")
+    }
+
+    res.json(found)
 })
 
 
 
-cartItems.post('/cart-items', (req, res) => {
+router.post('/cart-items', (req, res) => {
+    
+    const quantity = parseInt(req.body.quantity)
 
-    console.log(req.body);
+    if(!quantity) {
+        return res.status(400).send("Invalid Quantity")
+    }
+    
+    
+    const newItem = {
+        id: cartItems.length + 1,
+        product: req.body.product,
+        price: req.body.price,
+        quantity: quantity
+    }
 
-    res.json('Adding a cart item..')
+    cartItems.push(newItem)
+
+    res.status(201).json(newItem)
+
 })
 
 
 
-cartItems.put('/cart-items', (req, res) => {
+router.put('/cart-items/:id', (req, res) => {
+    const found = cartItems.find(item => item.id === +req.params.id)
 
-    res.json('Updating a cart item..')
+    if (found) {
+        found.price = req.body.price
+        found.quantity = req.body.quantity
+        found.product = req.body.product
+
+        res.json(found)
+    } else {
+        res.status(404).send('The cart item could not be found')
+    }
 })
 
-cartItems.delete('/cart-items', (req, res) => {
+router.delete('/cart-items/:id', (req, res) => {
+    // const found = cartItems.find(item => item.id === +req.params.id)
 
-    res.json('Deleting a cart item..')
+    // if (found) {
+    //     cartItems.splice(found)
+    //     res.status(204).send("The item was removed from the cart")
+    // } else {
+    //     res.status(404).send('The cart item could not be found')
+    // }
+
+    for (let cartItem of cartItems) {
+        if (!cartItem === req.params.id) {
+            cartItems.splice(cartItem)
+            res.status(204).send("The item was taken out of the cart")
+        } else {
+            res.status(404).send("the item could not be found")
+        }
+    }
 })
 
 
 
-module.exports = cartItems;
+module.exports = router;
 
