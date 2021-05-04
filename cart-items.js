@@ -31,14 +31,15 @@ const cartItems = [
 
 router.use(express.json());
 
-// Grabs all cart items
 router.get('/cart-items/', (req, res) => {
+
+    
 
     res.json(cartItems)
 })
 
 
-// 
+ 
 router.get('/cart-items/:id', (req, res) => {
     console.log(req.params.id)
     const found = cartItems.find(item => item.id === +req.params.id)
@@ -91,22 +92,13 @@ router.put('/cart-items/:id', (req, res) => {
 })
 
 router.delete('/cart-items/:id', (req, res) => {
-    // const found = cartItems.find(item => item.id === +req.params.id)
+    const index = cartItems.findIndex(item => item.id === +req.params.id)
 
-    // if (found) {
-    //     cartItems.splice(found)
-    //     res.status(204).send("The item was removed from the cart")
-    // } else {
-    //     res.status(404).send('The cart item could not be found')
-    // }
-
-    for (let cartItem of cartItems) {
-        if (!cartItem === req.params.id) {
-            cartItems.splice(cartItem)
-            res.status(204).send("The item was taken out of the cart")
-        } else {
-            res.status(404).send("the item could not be found")
-        }
+    if (index >= 0) {
+        cartItems.splice(index, 1)
+        res.status(204)
+    } else {
+        res.status(404).send('The cart item could not be found')
     }
 })
 
